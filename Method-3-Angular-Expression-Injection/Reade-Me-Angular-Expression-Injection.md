@@ -117,6 +117,5 @@ Demonstrated risk, exploitation, and remediation for dev teams.
 
 AngularJS sandbox escapes remain one of the most elegant DOM-based XSS vectors — especially in legacy SPAs. Exploiting unsafe bindings is a silent killer.
 
-Let me know if you want similar writeups for Method 4: Feedback Form, or to start a GitHub project board to track these vulnerabilities.
 
 

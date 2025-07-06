@@ -1,4 +1,4 @@
-Method-2 – URL Parameter Injection (DOM-Based XSS). This is written in the tone of an offensive security researcher, suitable for formal documentation, pentest reports, or a GitHub portfolio.
+Method-3 – URL Parameter Injection (DOM-Based XSS). This is written in the tone of an offensive security researcher, suitable for formal documentation, pentest reports, or a GitHub portfolio.
 
 markdown
 Copy

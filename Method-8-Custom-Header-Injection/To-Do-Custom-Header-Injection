@@ -1,0 +1,92 @@
+# ✅ TODO – Custom Header Injection (Bonus Payload Challenge)
+
+This checklist guides the systematic exploitation and documentation of a DOM-based XSS vulnerability via custom HTTP headers in OWASP Juice Shop. This method focuses on injecting malicious payloads into headers such as `X-Client-Id`, `X-Forwarded-For`, or `User-Agent`, which may be echoed into the DOM or rendered by frontend scripts without proper sanitization.
+
+---
+
+### 🔹 [x] Identify Injection Surface – Custom Header Reflection Points
+- Use browser dev tools and intercept traffic via **Burp Suite** or **ProxyChains**.
+- Identify REST API endpoints or frontend-rendered pages that parse or reflect custom HTTP headers.
+- Focus on routes such as `/rest/user/login`, `/whoami`, or any endpoint displaying metadata in the response.
+
+---
+
+### 🔹 [x] Craft and Inject Malicious Payload via Custom Headers
+- Select a header likely to be reflected (e.g., `X-Client-Id`, `X-Forwarded-For`, `X-Tracking`, `User-Agent`).
+- Inject malicious JavaScript payloads, including:
+  ```http
+  X-Client-Id: <script>alert('HeaderXSS')</script>
+Execute using:
+
+Burp Suite (Intercept → Modify Headers)
+
+curl:
+
+bash
+Copy code
+curl -H "X-Client-Id: <script>alert('XSS')</script>" http://localhost:3000/
+🔹 [x] Observe for Reflection in DOM or JS
+Open Developer Tools → Elements or Console tab.
+
+Inspect if header value is inserted unsanitized into HTML via innerHTML, document.write, or template bindings.
+
+Monitor network and console for:
+
+JavaScript execution
+
+Rendered payload in DOM
+
+Warning messages or malformed HTML blocks
+
+🔹 [x] Confirm Bonus Payload Challenge Resolution
+Upon successful JavaScript execution (e.g., alert(1)), validate:
+
+Scoreboard displays ✅ "Bonus Payload Challenge" marked as solved
+
+Popup alert or DOM manipulation proves payload was evaluated
+
+JS context shows headers reflected without sanitization
+
+🔹 [x] Capture Screenshot for Documentation
+Ensure popup box and Score Board URL (#/score-board) are visible simultaneously.
+
+Use the following screenshot command:
+
+Linux/Kali: Shift + PrtSc
+
+macOS: Cmd + Shift + 4
+
+Save image as:
+
+css
+Copy code
+DOM-XSS-Custom-Header-Injection.png
+🔹 [ ] Push Exploit Documentation to GitHub
+Ensure the following structure is present:
+
+pgsql
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-8-Custom-Header-Injection/
+    ├── README.md
+    ├── To-Do-Custom-Header-Injection.md
+    ├── payload.txt
+    ├── DOM-XSS-Custom-Header-Injection.png
+Git workflow:
+
+bash
+Copy code
+git add .
+git commit -m "🧾 Method 8: Custom Header Injection – Bonus Payload PoC and documentation added"
+git push origin main
+✅ Completion Checklist Summary
+Task	Status
+Identified vulnerable endpoints	✅
+Injected payload via custom headers	✅
+Verified DOM reflection and JS execution	✅
+Confirmed Bonus Payload challenge solved	✅
+Captured screenshot as PoC	✅
+Committed and pushed content to GitHub	⬜ (Pending)
+
+💡 Pro Tip: This method highlights that non-traditional vectors like HTTP headers can be as potent as URL or form inputs in triggering XSS, especially in applications that log or expose them in debug UIs or JS code paths.
+

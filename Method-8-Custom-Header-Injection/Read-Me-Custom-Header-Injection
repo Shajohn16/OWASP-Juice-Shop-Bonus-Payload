@@ -1,0 +1,115 @@
+# 🧠 Method 8 – DOM-Based XSS via Custom Header Injection
+
+This method exploits the reflection of unsanitized HTTP headers into the client-side DOM or response body. In certain misconfigured applications, HTTP headers like `X-Forwarded-For`, `X-Client-Id`, or other custom headers may be logged, parsed, or even displayed directly in the frontend UI for debugging, telemetry, or personalization — making them a silent vector for DOM-based XSS exploitation.
+
+---
+
+## 🔍 Vulnerable Surface
+
+### Targeted Headers:
+- `X-Client-Id`
+- `X-Forwarded-For`
+- `X-Custom-Info`
+- `User-Agent` *(if injected into client-side JavaScript context)*
+
+These headers are often passed to the frontend or templated into HTML/JS without proper sanitization when:
+- The app reflects diagnostic or telemetry data back to the user.
+- There is an Angular/React/JS-based frontend that parses header content exposed via APIs.
+- Debugging logs or dev endpoints expose raw request headers into the page DOM.
+
+---
+
+## 💉 Example Payload Injection
+
+### Method 1 – Using Burp Suite:
+1. Open Burp → Proxy → Intercept.
+2. Send a request to `http://localhost:3000/`
+3. Modify the request by injecting the payload:
+   ```http
+   X-Client-Id: <script>alert('HeaderXSS')</script>
+Forward the request.
+
+Method 2 – Using curl:
+bash
+Copy code
+curl -H "X-Client-Id: <script>alert('HeaderXSS')</script>" http://localhost:3000/
+🔬 Exploitation Technique
+Payload is sent via custom HTTP header.
+
+Frontend receives and improperly displays this header inside the DOM.
+
+DOM sink such as innerHTML or document.write() renders the payload directly.
+
+Malicious script executes in the victim's browser.
+
+✅ This confirms a DOM-based XSS via non-traditional input vector (i.e., not URL or form field), bypassing common input sanitizers.
+
+🧪 Payload Arsenal
+Raw:
+http
+Copy code
+X-Client-Id: <script>alert(document.domain)</script>
+Obfuscated / Filter Evasion:
+http
+Copy code
+X-Client-Id: <img src=x onerror=alert(1)>
+X-Client-Id: "><svg/onload=alert(1)>
+⚙️ Validation & Indicators of Exploitation
+JavaScript alert is triggered automatically after request.
+
+DevTools → Elements confirms payload reflected in the DOM.
+
+Juice Shop challenge banner: "Bonus Payload Challenge Solved" appears.
+
+📸 Screenshot Collection
+Capture the following for PoC:
+
+Alert box triggered by header-based XSS
+
+Juice Shop scoreboard with challenge marked solved
+
+Save screenshot as:
+
+css
+Copy code
+DOM-XSS-Custom-Header-Injection.png
+🛠️ Repository Layout
+Folder: Method-8-Custom-Header-Injection
+
+Files:
+
+vbnet
+Copy code
+├── README.md
+├── To-Do-Custom-Header-Injection.md
+├── payload.txt
+├── DOM-XSS-Custom-Header-Injection.png
+🧾 GitOps Workflow
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-8-Custom-Header-Injection
+
+git add .
+git commit -m "🧾 Method 8: Custom Header Injection – Bonus Payload XSS documented and PoC added"
+git push origin main
+🔐 Mitigation Recommendations
+Risk	Recommendation
+Reflection of unsanitized headers	Never expose internal headers to the client
+DOM injection via headers	Use textContent instead of innerHTML
+CSP Bypass due to header injection	Enforce strong CSP rules
+Insufficient input filtering	Sanitize all header values passed into DOM/UI
+
+✅ Summary
+Custom headers like X-Client-Id were identified as untrusted input vectors.
+
+Successfully injected a DOM-based XSS payload.
+
+Verified execution using both Burp Suite and curl.
+
+Documented exploit, captured evidence, and prepared push to GitHub.
+
+🧠 This demonstrates that DOM XSS vectors are not limited to visible input fields — hidden or low-level HTTP constructs like headers can be equally dangerous if mishandled by frontend logic.
+
+vbnet
+Copy code
+

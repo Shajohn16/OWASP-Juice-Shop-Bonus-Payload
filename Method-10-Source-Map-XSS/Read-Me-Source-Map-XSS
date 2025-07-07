@@ -1,0 +1,127 @@
+# 🧠 Method 10 – JavaScript Source Map XSS (Hidden Debug Function Exploitation)
+
+This method exploits the presence of **JavaScript source map (`.map`) files** exposed in production deployments. These files are intended for development use only, but when improperly exposed, they can leak sensitive internal function names, hidden code paths, debug logic, or undocumented utility methods that are otherwise minified or obfuscated in production builds. If any of these functions enable user-controlled input to be executed dynamically (e.g., via `eval`, `Function`, `innerHTML`, or `document.write`), it becomes a prime candidate for client-side XSS exploitation.
+
+---
+
+## 📦 What Are Source Maps?
+
+JavaScript source maps (`*.map`) are JSON-formatted files that map the minified production code back to its original source (e.g., ES6, TypeScript, CoffeeScript). They contain references to original variable names, comments, and function names that were hidden in the minified version.
+
+---
+
+## 🚨 Threat Model: Why This Matters
+
+If developers expose `.map` files like `main.js.map`, `vendor.bundle.js.map`, or `runtime.map.js`:
+
+- Attackers can **reconstruct the original JS source**
+- Identify **internal utility functions** and **debug APIs**
+- Use these undocumented functions to **execute payloads**
+- Sometimes discover **feature flags**, **admin panels**, or **internal dev routes**
+
+---
+
+## 🧪 Exploitation Walkthrough
+
+### 🔍 Step 1: Discover Exposed Source Maps
+Check if any `.map` files are accessible directly from the application root or JS asset paths:
+
+```bash
+http://localhost:3000/main.js.map
+http://localhost:3000/polyfills.js.map
+http://localhost:3000/runtime.js.map
+Use tools like:
+
+curl to pull map files:
+
+bash
+Copy code
+curl http://localhost:3000/main.js.map -o main.map
+Chrome DevTools → Sources → Look for source-mapped files
+
+📜 Step 2: Parse and Analyze the Source Map
+Use browser DevTools or third-party tools:
+
+https://sokra.github.io/source-map-visualization/
+
+Reconstruct the original source tree from the map
+
+Identify:
+
+eval() calls
+
+Function() constructors
+
+window.evalPayload(...)
+
+loadFromUserInput()
+
+Unused debug-only functions
+
+Example vulnerable snippet:
+
+js
+Copy code
+window.evalPayload = function(payload) {
+  return eval(payload);
+}
+💣 Step 3: Trigger Hidden Function Execution
+Craft a payload leveraging the discovered function:
+
+html
+Copy code
+<script>window.evalPayload("alert('XSS via map')")</script>
+Or inject via UI elements that access these functions:
+
+js
+Copy code
+<input type="text" oninput="window.evalPayload(this.value)">
+🔬 Verification
+✅ Expected Results:
+JavaScript alert triggered from eval()
+
+Bonus Payload challenge marked as solved in Juice Shop
+
+Source map exposes original context for DOM sinks
+
+🧾 Mitigation Recommendations
+Issue	Fix
+Exposed .map Files	Remove them from production builds
+eval() Usage	Avoid completely; use safe parsing techniques
+Debug Function Exposure	Gate behind environment checks or remove entirely
+Lack of CSP	Add strict CSP to block inline scripts
+
+📸 Screenshot Evidence
+Capture:
+
+The alert box triggered via the reconstructed JS function
+
+The Scoreboard page showing the “Bonus Payload” challenge as completed
+
+Save as:
+
+javascript
+Copy code
+Source-Map-XSS-Payload.png
+📁 Folder Structure for Documentation
+mathematica
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-10-Source-Map-XSS/
+    ├── README.md
+    ├── To-Do-Source-Map-XSS.md
+    ├── main.js.map (copy of source map used)
+    ├── payload.txt
+    ├── Source-Map-XSS-Payload.png
+✅ Summary
+Element	Description
+Vector	DOM-Based XSS via leaked JavaScript .map debug functions
+Vulnerability	Insecure exposure of internal debug code via source maps
+Risk	Code execution in browser, function misuse, client-side RCE
+Solution	Strip .map files from production, eliminate eval, secure frontend logic
+
+⚠️ Exposing debug tooling in production is equivalent to publishing your app’s skeleton key. Offensive practitioners use this vector to pivot into deeper app logic for client-side manipulation and exploitation.
+
+vbnet
+Copy code
+

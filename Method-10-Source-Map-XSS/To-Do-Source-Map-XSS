@@ -1,0 +1,81 @@
+# ✅ TODO – Source Map XSS (Method 10 – JavaScript Debug Function Exploitation)
+
+This task list outlines the detailed steps required to exploit and document a **DOM-based XSS vulnerability** via exposed JavaScript `.map` files. The goal is to reverse-engineer production-minified JavaScript, identify hidden debug functions such as `evalPayload`, and leverage them to execute arbitrary JavaScript in the client’s browser context.
+
+---
+
+## 🔍 Phase 1 – Discovery: Locate Exposed Source Maps
+
+- [x] Enumerate `.map` files through manual URL fuzzing:
+  - `http://<target>/main.js.map`
+  - `http://<target>/vendor.js.map`
+  - `http://<target>/polyfills.js.map`
+  - Use `ffuf`, `dirsearch`, or Burp Intruder for automation.
+
+- [x] Use `curl` or browser DevTools to download accessible `.map` files:
+  ```bash
+  curl http://localhost:3000/main.js.map -o main.js.map
+🔬 Phase 2 – Analysis: Reconstruct JS Source
+ Load .map file into a source map visualizer:
+
+https://sokra.github.io/source-map-visualization
+
+Or manually de-minify using browser DevTools.
+
+ Locate vulnerable internal functions:
+
+Examples: window.evalPayload, unsafeRender(), execFromInput()
+
+Look for any functions calling eval(), Function(), innerHTML, setTimeout with string arguments.
+
+💥 Phase 3 – Exploitation: Execute Payload
+ Craft and inject payload using exposed function:
+
+js
+Copy code
+javascript:window.evalPayload("alert('SourceMap XSS')")
+ Trigger execution by pasting into the address bar or injecting into a vulnerable field, if routing is involved.
+
+📸 Phase 4 – Documentation & Proof of Concept
+ Capture screenshot of successful alert execution.
+
+Alert box and/or dev console output
+
+Bonus Payload Challenge marked as solved
+
+ Name screenshot: SourceMap-XSS-Execution.png
+
+ Save .map file and payload.txt as part of evidence artifacts
+
+🗃️ Phase 5 – Version Control
+ Create folder: Method-10-Source-Map-XSS
+
+ Include:
+
+css
+Copy code
+├── README.md
+├── To-Do-Source-Map-XSS.md
+├── SourceMap-XSS-Execution.png
+├── payload.txt
+└── main.js.map
+ GitOps:
+
+bash
+Copy code
+git add .
+git commit -m "🗺️ Method-10: Source Map XSS – debug function exploitation"
+git push origin main
+✅ Completion Criteria
+Source map files enumerated and analyzed
+
+Vulnerable JS logic identified and reverse-engineered
+
+Payload executed via debug function
+
+Alert popup successfully triggered
+
+All evidence committed to GitHub for traceability and peer validation
+
+🔐 This method demonstrates the real-world risk of shipping development artifacts in production. Exposed .map files provide a roadmap to buried client-side vulnerabilities that bypass conventional input validation or WAF signatures.
+

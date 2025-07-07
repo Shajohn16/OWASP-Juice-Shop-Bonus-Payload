@@ -1,0 +1,81 @@
+# ✅ TODO – Cookie-Based XSS via `document.cookie` Injection
+
+A stepwise roadmap to exploit DOM-based XSS by manipulating cookie values—targeting front-end sinks that consume `document.cookie` unsafely. The focus is on controlled script execution through persistent client-side injection.
+
+---
+
+## 🔹 [x] Identify Usage of Cookies in DOM Context
+
+- Inspect the application logic using browser DevTools or decompiled JS.
+- Search for references to `document.cookie`, `trackingId`, or similar identifiers.
+- Flag any DOM sink functions like:
+  - `innerHTML`, `outerHTML`
+  - `document.write()`
+  - `jQuery.html()`
+- Validate whether values from `document.cookie` are rendered directly into the DOM or executed inside script contexts.
+
+---
+
+## 🔹 [x] Inject Malicious Payload into Cookie
+
+- Open browser console and set a malicious cookie:
+  ```js
+  document.cookie = "trackingId=<script>alert('Cookie XSS')</script>";
+Optionally, inject obfuscated/encoded payloads:
+
+js
+Copy code
+document.cookie = "trackingId=%3Csvg%20onload%3Dalert(1337)%3E";
+Verify cookie presence using:
+
+js
+Copy code
+console.log(document.cookie);
+🔹 [x] Reload Page and Trigger DOM Rendering
+Refresh the page or navigate to a component that reads the affected cookie.
+
+Use browser DevTools → Elements tab → search for your payload.
+
+Confirm whether the payload was inserted unescaped into a DOM sink.
+
+Look for:
+
+Alert boxes (alert('XSS'))
+
+DOM context reflection
+
+Scoreboard auto-updating
+
+🔹 [x] Capture Evidence (Screenshot)
+Capture screenshot during payload execution.
+
+Ensure alert() is visible.
+
+Open the Juice Shop /#/score-board tab to display "Bonus Payload Challenge" as solved.
+
+Save with filename:
+
+Copy code
+Cookie-XSS-trackingId-execution.png
+🔹 [ ] Push Exploit to GitHub Repository
+Ensure the following files exist in the folder:
+
+pgsql
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-6-Cookie-XSS/
+    ├── README.md
+    ├── To-Do-Cookie-XSS.md
+    ├── payload.txt
+    ├── Cookie-XSS-trackingId-execution.png
+Use the Git workflow below:
+
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-6-Cookie-XSS
+git add .
+git commit -m "🍪 Method 6: Cookie-based DOM XSS – payloads and screenshot added"
+git push origin main
+🎯 Goal
+Document and weaponize a client-side DOM XSS using malicious cookies. Ensure it reflects in the DOM, triggers JavaScript execution, and completes the Bonus Payload challenge in OWASP Juice Shop.
+

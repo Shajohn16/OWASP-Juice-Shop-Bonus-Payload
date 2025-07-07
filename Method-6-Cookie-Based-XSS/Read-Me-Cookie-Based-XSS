@@ -1,0 +1,114 @@
+# 🍪 Method 6 – Cookie-Based XSS via `document.cookie` Injection
+
+---
+
+## 🧠 Overview
+
+This technique targets the insecure usage of `document.cookie` values in client-side JavaScript logic or DOM rendering. In vulnerable implementations, if the application reads a cookie (e.g., `trackingId`, `userPrefs`, etc.) and inserts its value into the DOM without applying sanitization or encoding, it opens a critical DOM-based XSS vector.
+
+This class of vulnerability is dangerous because it doesn't require a direct URL-based payload. Instead, the payload is stored in the client’s browser via the `document.cookie` API and executed upon DOM rendering.
+
+---
+
+## 🔍 Attack Vector
+
+Target any logic in the front-end codebase (usually Angular or vanilla JS in Juice Shop) that reads cookie values and injects them into the DOM or evaluates them in `eval()`, `innerHTML`, or attribute assignments. If these values are unescaped, XSS can be chained via cookie tampering.
+
+Common code smells include:
+
+```javascript
+document.getElementById('banner').innerHTML = document.cookie;
+Or:
+
+javascript
+Copy code
+let id = document.cookie.split('trackingId=')[1];
+document.write(id); // ❌ SINK
+💣 Payload Injection
+🧪 Step 1: Set the Malicious Cookie
+Use browser DevTools or intercept requests via Burp Suite to set the following cookie:
+
+javascript
+Copy code
+document.cookie = "trackingId=<script>alert('Cookie XSS')</script>";
+Alternative payloads:
+
+html
+Copy code
+trackingId="><img src=x onerror=alert(1)>
+trackingId={{constructor.constructor('alert(1337)')()}}
+💡 This creates a persistent vector—any functionality that reflects trackingId back into the DOM becomes vulnerable to client-side script execution.
+
+🔄 Step 2: Reload and Trigger DOM Rendering
+Reload the page after setting the cookie
+
+Observe where the cookie is reflected
+
+Check Elements tab for DOM injection
+
+Use Ctrl+F → search for trackingId or <script>
+
+🔬 Exploit Behavior
+If vulnerable, the browser will:
+
+Parse the cookie value
+
+Inject it into an unsafe DOM sink (innerHTML, document.write)
+
+Execute the embedded script
+
+Expected output:
+
+javascript
+Copy code
+alert("Cookie XSS")
+📸 PoC Capture
+Screenshot the browser with the alert visible
+
+Open the Juice Shop scoreboard (/#/score-board)
+
+Verify the “Bonus Payload” challenge is marked as solved
+
+Save screenshot as:
+
+Copy code
+Cookie-XSS-trackingId-execution.png
+📂 Folder Structure
+pgsql
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-6-Cookie-XSS/
+    ├── README.md
+    ├── To-Do-Cookie-XSS.md
+    ├── payload.txt
+    ├── Cookie-XSS-trackingId-execution.png
+🧾 GitOps
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-6-Cookie-XSS
+git add .
+git commit -m "🍪 Method 6: DOM XSS via trackingId cookie injection – documented PoC"
+git push origin main
+⚠️ Security Risk
+Vector	DOM-Based XSS via Cookies
+Impact	Arbitrary JavaScript Execution
+Entry Point	document.cookie
+Exploitable	Yes, by any attacker setting cookies
+Severity	High (CVSS 7.1–8.2 based on context)
+
+🔐 Remediation Guidelines
+Never directly inject document.cookie values into innerHTML or dynamic JavaScript.
+
+Use .textContent or strong context-aware escaping methods.
+
+Validate and sanitize cookie values before client-side processing.
+
+Enforce a strict Content-Security-Policy (CSP) to prevent inline scripts.
+
+Where possible, move tracking logic to secure, server-side endpoints.
+
+✅ Conclusion
+This method showcases a non-obvious, persistent DOM-based XSS using a document.cookie-based vector, highlighting the critical need for frontend hardening. Exploiting this does not require user interaction beyond accessing a crafted site with a malicious cookie preset.
+
+🧠 Attackers love hidden sinks. Cookie injection is a silent killer—zero clicks, full control.
+

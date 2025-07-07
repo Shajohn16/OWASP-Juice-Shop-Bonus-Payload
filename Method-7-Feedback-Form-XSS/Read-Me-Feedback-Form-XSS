@@ -1,0 +1,123 @@
+# 🧠 Method 7 – DOM-Based XSS via Hidden Feedback Form
+
+This method exploits a DOM-based Cross-Site Scripting (XSS) vulnerability in the feedback or contact submission form on OWASP Juice Shop. It leverages unescaped input reflections within the DOM that are not properly sanitized or encoded, commonly found in forms like `/#/contact` or `/#/feedback`.
+
+---
+
+## 🔍 Targeted Endpoint
+
+- URL: `http://localhost:3000/#/contact`  
+- Vulnerable Components:
+  - `comment` text area
+  - `email` or `rating` fields
+
+These input fields may be stored, processed, or rendered in a vulnerable context that allows the execution of user-supplied JavaScript if reflected into the DOM.
+
+---
+
+## 💣 Exploit Payload
+
+Test payload inserted into the `comment` field:
+```html
+<script>alert('Feedback XSS')</script>
+Alternative evasive payloads:
+
+html
+Copy code
+<img src=x onerror=alert('1337')>
+<svg/onload=alert(1)>
+"><svg/onload=confirm('XSS')>
+These payloads rely on:
+
+HTML tag injection (e.g., <script>, <img>, <svg>)
+
+Breaking context using "> or malformed tags
+
+Triggering handlers like onerror, onload
+
+⚙️ Execution Flow
+Navigate to /#/contact or /#/feedback
+
+Inject the payload into a field such as:
+
+comment
+
+email
+
+subject
+
+Submit the form
+
+Trigger reflection/view page or render response
+
+The vulnerable script renders user input unescaped into the DOM (e.g., innerHTML, document.write)
+
+Payload executes as part of the page rendering process
+
+🧪 Indicators of Successful Exploitation
+JavaScript alert() box appears
+
+DOM inspection shows raw script inserted unescaped
+
+Scoreboard shows Bonus Payload challenge completed
+
+No server-side validation errors encountered (purely client-side)
+
+🔐 Why It Works
+Feedback form processes input client-side
+
+Angular/JavaScript dynamically updates DOM using user input
+
+No sanitization (e.g., DOMPurify) or encoding mechanisms in place
+
+Dangerous use of sinks such as innerHTML
+
+🛡️ Mitigation Techniques (Dev Side)
+Risk	Secure Alternative
+DOM injection via input	Use .textContent instead of .innerHTML
+Script execution	Sanitize using DOMPurify
+Lack of encoding	Encode HTML entities
+
+📸 Screenshot Naming Convention
+Filename: DOM-XSS-FeedbackForm-Execution.png
+
+Must include:
+
+Triggered alert box
+
+Scoreboard tab showing "Bonus Payload" as solved
+
+📁 Recommended Folder Structure
+bash
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-7-Feedback-XSS/
+    ├── README.md
+    ├── To-Do-Feedback-XSS.md
+    ├── payload.txt
+    ├── DOM-XSS-FeedbackForm-Execution.png
+🧾 GitOps Workflow
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-7-Feedback-XSS
+
+# Stage files
+git add .
+
+# Commit with payload documentation
+git commit -m "📬 Method 7: DOM XSS via feedback form – PoC and payload logged"
+
+# Push to remote repo
+git push origin main
+✅ Summary
+Exploited a vulnerable feedback/contact form by injecting DOM XSS payloads
+
+Bypassed frontend controls through improper input handling
+
+Triggered DOM-based script execution with no server interaction
+
+Successfully completed the Bonus Payload challenge in OWASP Juice Shop
+
+vbnet
+Copy code
+

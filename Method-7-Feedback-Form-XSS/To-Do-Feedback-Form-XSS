@@ -1,0 +1,83 @@
+# ✅ TODO – DOM-Based XSS via Feedback/Contact Form (Method 7)
+
+This checklist captures the structured methodology used to identify and exploit DOM-based Cross-Site Scripting (XSS) through the feedback form in OWASP Juice Shop. The goal is to demonstrate exploitation by injecting a script payload that triggers client-side JavaScript execution without server-side filtering.
+
+---
+
+### 🔍 Step 1: Identify the Target Endpoint
+
+- [x] Navigate to `/#/contact` or `/#/feedback`
+- [x] Locate and inspect form fields: `comment`, `email`, `rating`
+- [x] Observe how data is handled post-submission using browser DevTools (Network & DOM tabs)
+
+---
+
+### 🧪 Step 2: Injection Point Validation
+
+- [x] Enter basic string in `comment` (e.g., `test123`)
+- [x] Submit and monitor DOM to see where and how it's reflected
+- [x] Look for DOM sinks like:
+  - `innerHTML`
+  - `document.write()`
+  - AngularJS-bound content (`{{ }}`)
+
+---
+
+### 💉 Step 3: Payload Crafting & Injection
+
+- [x] Test payload:
+  ```html
+  <script>alert('XSS')</script>
+ Advanced payloads (if filtering is present):
+
+html
+Copy code
+<img src=x onerror=alert('XSS')>
+"><svg/onload=alert(1)>
+ Inject payload into comment field and submit the form
+
+📊 Step 4: Trigger and Validate Execution
+ Reload the page or navigate to an admin/review section (if available)
+
+ Confirm that the alert executes automatically
+
+ Open browser DevTools → Elements to verify script injection in DOM
+
+📸 Step 5: Documentation & Evidence Collection
+ Capture a screenshot showing:
+
+The triggered alert
+
+Juice Shop Score Board (confirm Bonus Payload solved)
+
+ Save image as:
+
+Copy code
+DOM-XSS-FeedbackForm-Execution.png
+🧾 Step 6: Repository Documentation & Push
+ Ensure the following files are in Method-7-Feedback-XSS/:
+
+README.md
+
+To-Do-Feedback-XSS.md
+
+payload.txt
+
+DOM-XSS-FeedbackForm-Execution.png
+
+ Git workflow:
+
+bash
+Copy code
+git add .
+git commit -m "📬 Method 7: DOM-Based XSS via feedback form – payload and PoC added"
+git push origin main
+✅ Completion Criteria
+ Feedback form renders unsanitized input
+
+ Payload executes in the browser's context
+
+ Bonus Payload challenge marked as solved
+
+ Evidence collected and repository updated
+

@@ -1,0 +1,91 @@
+# ✅ TODO – Image Upload XSS via Filename and EXIF Metadata Injection
+
+This task list tracks the structured steps required to demonstrate a DOM-based XSS vulnerability by injecting malicious JavaScript into uploaded image files — either through the filename or EXIF metadata fields — and rendering that data unsanitized within the web application's frontend DOM.
+
+---
+
+## 🧩 Phase 1 – Preparation of Malicious Payload
+
+- [x] **Craft Filename-Based Payload**
+  - Rename an image file to embed executable HTML/JS payloads within the filename.
+  - Example:
+    ```bash
+    mv logo.jpg '"><script>alert(1)</script>.jpg'
+    ```
+  - Objective: When this filename is rendered unsanitized in the DOM (e.g., `<img src="...">` or in a `<p>` tag), the script executes.
+
+- [x] **Inject JavaScript into EXIF Metadata**
+  - Use `exiftool` to modify fields like `Comment`, `ImageDescription`, or `Author`.
+  - Command:
+    ```bash
+    exiftool -Comment='<script>alert(1)</script>' image.jpg
+    ```
+  - Validate the payload insertion using:
+    ```bash
+    exiftool image.jpg
+    ```
+
+---
+
+## 🧪 Phase 2 – Exploitation Attempt
+
+- [x] **Upload the Modified File**
+  - Navigate to a page with file upload functionality (e.g., `/#/complain`, `/#/profile`).
+  - Upload the malicious file prepared in Phase 1.
+
+- [x] **Trigger Reflection into DOM**
+  - After upload, navigate to the frontend component that displays the filename or parses EXIF metadata.
+  - Look for places such as:
+    - Image preview
+    - Filename display section
+    - Tooltip/hover caption
+  - Use browser DevTools → `Elements` tab to confirm raw HTML injection.
+
+---
+
+## 🔍 Phase 3 – Validation
+
+- [x] **Verify Execution of JavaScript Payload**
+  - Expected Result:
+    - Alert box triggered (`alert(1)`)
+    - Script executed in the context of the page
+    - Scoreboard entry marked “Bonus Payload Solved”
+  - Optional:
+    - Run `console.log(document.cookie)` to observe document context
+    - Confirm sink (e.g., `innerHTML`, jQuery `.html()`) in source map
+
+- [x] **Capture Screenshot as PoC**
+  - Ensure alert box is visible on screen.
+  - Open `/score-board` to highlight that the bonus challenge was marked as solved.
+  - Save screenshot as:
+    ```bash
+    Image-Upload-XSS-PoC.png
+    ```
+
+---
+
+## 🗃️ Phase 4 – Documentation and Version Control
+
+- [ ] **Push Exploit Files to GitHub**
+  - Structure:
+    ```
+    OWASP-Juice-Shop-Bonus-Payload/
+    └── Method-9-Image-Upload-XSS/
+        ├── README.md
+        ├── To-Do-Image-Upload-XSS.md
+        ├── payload-image.jpg
+        ├── Image-Upload-XSS-PoC.png
+    ```
+  - Git Workflow:
+    ```bash
+    git add .
+    git commit -m "🖼️ Method 9 – Image Upload XSS via filename/EXIF – payloads and PoC"
+    git push origin main
+    ```
+
+---
+
+## ✅ Final Objective
+
+> Establish a repeatable proof-of-concept that leverages image metadata or filename injection to achieve DOM-based XSS. This highlights insecure DOM insertion and poor sanitization practices in file upload handlers.
+

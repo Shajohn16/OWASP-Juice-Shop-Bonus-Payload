@@ -1,0 +1,110 @@
+# 🧠 Method 9 – Image Upload XSS via Filename or EXIF Metadata Injection
+
+This method demonstrates a DOM-based XSS vulnerability in the OWASP Juice Shop application by exploiting how uploaded image metadata (such as filenames or EXIF attributes) is rendered unsanitized in the frontend UI. If these inputs are injected into HTML via insecure JavaScript sinks like `innerHTML` or template bindings without encoding/sanitization, it opens the door for arbitrary JavaScript execution in the victim’s browser context.
+
+---
+
+## 🔍 Attack Surface: File Upload Functionality
+
+Target locations:
+- `/#/complain`
+- `/#/profile`
+- `/#/support`
+- Or any route that allows uploading profile pictures, avatars, or complaint screenshots
+
+Check if:
+- Uploaded filenames or metadata are reflected into the DOM
+- File input is used in rendering without escaping
+- EXIF metadata or filenames are programmatically read via client-side JS
+
+---
+
+## 💣 Payload Techniques
+
+### 1. 🔠 **Filename-Based Injection**
+If the application displays the uploaded filename as part of the DOM or uses it in JS rendering, inject:
+- Filename:
+  ```bash
+  "><script>alert('XSS')</script>.jpg
+Rename image before upload:
+
+bash
+Copy code
+mv innocent.jpg '"><script>alert(9)</script>.jpg'
+Impact:
+When the file is rendered back in the DOM (e.g., inside an <img> tag or filename preview), the script tag breaks out of the context and executes malicious JS.
+
+2. 🧬 EXIF Metadata Injection
+EXIF fields such as ImageDescription, Comment, or Author may be parsed client-side using libraries like exif-js or native browser APIs.
+
+Tools to inject EXIF:
+
+bash
+Copy code
+exiftool -ImageDescription='<script>alert("XSS via EXIF")</script>' xss.jpg
+If these metadata fields are later injected into the DOM by JavaScript (e.g., for displaying captions, tooltips, etc.), the malicious payload will execute in the victim’s browser.
+
+⚙️ Reproduction Steps
+Modify filename or inject EXIF metadata with malicious JavaScript
+
+Upload the file via the /complain or /profile page
+
+Trigger the frontend component that reflects this content
+
+Open DevTools → Search for injected content in Elements tab
+
+Confirm script execution
+
+✅ Indicators of Successful Exploitation
+Indicator	Description
+✅ Alert Triggered	Script executes on page render (alert(9))
+✅ DOM Reflection	Payload visible in the DOM via innerHTML, etc.
+✅ Challenge Solved	Juice Shop marks “Bonus Payload” as completed
+
+🔐 Risk Profile
+Vector	File Upload (Image)
+Vulnerability	DOM-Based XSS
+Exploitable Fields	Filename, EXIF Metadata
+Severity	High – Remote Code Execution in Browser
+Risk	Session hijacking, data exfiltration, persistent browser control
+
+🔧 Remediation Guidelines
+Sanitize all uploaded filenames before rendering in the DOM
+
+Avoid using innerHTML for dynamic content insertion
+
+Strip or sanitize EXIF metadata before client-side rendering
+
+Implement CSP headers to mitigate inline script execution
+
+Validate and normalize filenames server-side before reflecting
+
+📁 Folder Structure
+mathematica
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-9-Image-Upload-XSS/
+    ├── README.md
+    ├── To-Do-Image-Upload-XSS.md
+    ├── malicious-image.jpg
+    ├── screenshot.png
+🧾 GitOps Workflow
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-9-Image-Upload-XSS
+
+# Stage and commit all files
+git add .
+git commit -m "📸 Method 9 – Image Upload XSS via filename/EXIF – added payload and screenshot"
+git push origin main
+🎯 Summary
+Demonstrated exploitation via insecure DOM reflection of uploaded image data.
+
+Two-pronged approach: Filename injection and EXIF metadata poisoning.
+
+Successfully triggered a client-side XSS payload.
+
+Validated Bonus Payload challenge completion.
+
+Documented and structured for peer review and future reuse.
+

